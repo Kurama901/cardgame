@@ -30,6 +30,7 @@
             flex-direction: column;
             align-items: center;
             padding: 2rem;
+            position: relative;
         }
 
         header {
@@ -104,6 +105,7 @@
             gap: 1rem;
             max-width: 600px;
             width: 100%;
+            margin-bottom: 2rem;
         }
 
         .card {
@@ -207,6 +209,14 @@
             margin-bottom: 2rem;
         }
 
+        footer {
+            margin-top: auto;
+            padding: 1rem;
+            text-align: center;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 600px) {
             .game-board {
                 grid-template-columns: repeat(3, 1fr);
@@ -252,6 +262,10 @@
             <button id="playAgain">Play Again</button>
         </div>
     </div>
+
+    <footer>
+        &copy; 2025 Memory Game | Created by @lutfibatawi
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
