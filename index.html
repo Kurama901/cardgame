@@ -3,321 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Labirin Alien | Game Menantang</title>
+    <title>Memory Game - Dark Modern</title>
     <style>
         :root {
-            --wall: #3a0ca3;
-            --player: #f72585;
-            --enemy: #4cc9f0;
-            --exit: #2ec4b6;
-            --bg: #1a1a2e;
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --darker: #1e272e;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --danger: #d63031;
         }
-        body {
-            font-family: 'Press Start 2P', cursive;
-            background-color: var(--bg);
-            color: white;
-            text-align: center;
+
+        * {
             margin: 0;
-            padding: 20px;
-            overflow: hidden;
-        }
-        h1 {
-            color: #f72585;
-            text-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
-            margin-bottom: 20px;
-        }
-        #game-container {
-            display: inline-block;
-            position: relative;
-            margin: 20px auto;
-            border: 4px solid var(--wall);
-        }
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(20, 25px);
-            grid-template-rows: repeat(15, 25px);
-        }
-        .cell {
-            width: 25px;
-            height: 25px;
+            padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .wall {
-            background-color: var(--wall);
+
+        body {
+            background-color: var(--darker);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
         }
-        .player {
-            background-color: var(--player);
-            border-radius: 50%;
-            animation: pulse 0.5s infinite alternate;
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
         }
-        .enemy {
-            background-color: var(--enemy);
-            border-radius: 50%;
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(108, 92, 231, 0.3);
         }
-        .exit {
-            background-color: var(--exit);
-            border-radius: 5px;
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+            background-color: rgba(30, 39, 46, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        #controls {
-            margin: 20px;
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
         }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
         button {
-            background-color: #7209b7;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            font-family: inherit;
+            padding: 0.6rem 1.2rem;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);
         }
+
         button:hover {
-            background-color: #f72585;
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(108, 92, 231, 0.4);
         }
-        #message {
-            height: 30px;
-            margin: 10px;
-            font-size: 14px;
-            color: #4cc9f0;
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 2rem;
         }
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
+
+        .card {
+            aspect-ratio: 1/1;
+            background-color: var(--dark);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card .front,
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card .front {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            transform: rotateY(180deg);
+        }
+
+        .card .back {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .card i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .card.matched {
+            opacity: 0.5;
+            cursor: default;
+            transform: scale(0.95);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--darker);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal h2 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .modal p {
+            margin-bottom: 2rem;
+        }
+
         footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #a5a5a5;
+            margin-top: auto;
+            padding: 1rem;
+            text-align: center;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>LABIRIN ALIEN</h1>
-    <div id="message">Hindari alien dan temukan jalan keluar!
-    <p>Tekan tombol panah untuk bergerak</p>
+    <header>
+        <h1>Memory Game</h1>
+        <p>Find all matching pairs to win!</p>
+    </header>
+
+    <div class="game-info">
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-value" id="moves">0</span>
+                <span class="stat-label">Moves</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="timer">0</span>
+                <span class="stat-label">Seconds</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="matches">0</span>
+                <span class="stat-label">Matches</span>
+            </div>
+        </div>
+        <button id="restart">Restart</button>
     </div>
-    <div id="game-container">
-        <div id="game-board"></div>
+
+    <div class="game-board" id="gameBoard"></div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2>Congratulations!</h2>
+            <p>You won the game in <span id="finalMoves">0</span> moves and <span id="finalTime">0</span> seconds!</p>
+            <button id="playAgain">Play Again</button>
+        </div>
     </div>
-    <div id="controls">
-        <button id="startBtn">Mulai Game</button>
-        <button id="resetBtn">Reset</button>
-    </div>
+
     <footer>
-        &copy; 2025Labirin Alien | Created by @lutfibatawi
+        &copy; 2025 Memory Game | Created by @lutfibatawi
     </footer>
 
     <script>
-        // Game setup
-        const boardSize = { cols: 20, rows: 15 };
-        const gameBoard = document.getElementById('game-board');
-        const messageEl = document.getElementById('message');
-        const startBtn = document.getElementById('startBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        
-        let playerPos = { x: 1, y: 1 };
-        let exitPos = { x: 18, y: 13 };
-        let enemies = [];
-        let gameInterval;
-        let isGameRunning = false;
-        
-        // Maze layout (1 = wall, 0 = path)
-        const mazeLayout = [
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
-            [1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1],
-            [1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1],
-            [1,0,1,0,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,1],
-            [1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,1],
-            [1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
-            [1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1],
-            [1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
-            [1,0,1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-        ];
-        
-        // Initialize game board
-        function initBoard() {
-            gameBoard.innerHTML = '';
-            
-            for (let y = 0; y < boardSize.rows; y++) {
-                for (let x = 0; x < boardSize.cols; x++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.id = `cell-${x}-${y}`;
-                    
-                    if (mazeLayout[y][x] === 1) {
-                        cell.classList.add('wall');
-                    }
-                    
-                    gameBoard.appendChild(cell);
-                }
-            }
-        }
-        
-        // Update player position
-        function updatePlayer() {
-            // Clear previous position
-            document.querySelectorAll('.player').forEach(el => el.classList.remove('player'));
-            
-            // Set new position
-            const playerCell = document.getElementById(`cell-${playerPos.x}-${playerPos.y}`);
-            playerCell.classList.add('player');
-        }
-        
-        // Update enemies
-        function updateEnemies() {
-            // Clear previous enemies
-            document.querySelectorAll('.enemy').forEach(el => el.classList.remove('enemy'));
-            
-            // Set new positions
-            enemies.forEach(enemy => {
-                const enemyCell = document.getElementById(`cell-${enemy.x}-${enemy.y}`);
-                enemyCell.classList.add('enemy');
-            });
-        }
-        
-        // Update exit
-        function updateExit() {
-            document.querySelectorAll('.exit').forEach(el => el.classList.remove('exit'));
-            const exitCell = document.getElementById(`cell-${exitPos.x}-${exitPos.y}`);
-            exitCell.classList.add('exit');
-        }
-        
-        // Move enemies randomly
-        function moveEnemies() {
-            enemies.forEach(enemy => {
-                const directions = [
-                    { dx: 1, dy: 0 }, { dx: -1, dy: 0 },
-                    { dx: 0, dy: 1 }, { dx: 0, dy: -1 }
-                ];
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game variables
+            const icons = [
+                'fa-heart', 'fa-star', 'fa-moon', 'fa-sun',
+                'fa-cloud', 'fa-bolt', 'fa-leaf', 'fa-gem'
+            ];
+            let cards = [];
+            let flippedCards = [];
+            let matchedPairs = 0;
+            let moves = 0;
+            let timer = 0;
+            let timerInterval;
+            let gameStarted = false;
+
+            // DOM elements
+            const gameBoard = document.getElementById('gameBoard');
+            const movesDisplay = document.getElementById('moves');
+            const timerDisplay = document.getElementById('timer');
+            const matchesDisplay = document.getElementById('matches');
+            const restartBtn = document.getElementById('restart');
+            const winModal = document.getElementById('winModal');
+            const finalMoves = document.getElementById('finalMoves');
+            const finalTime = document.getElementById('finalTime');
+            const playAgainBtn = document.getElementById('playAgain');
+
+            // Initialize game
+            function initGame() {
+                // Reset game state
+                cards = [];
+                flippedCards = [];
+                matchedPairs = 0;
+                moves = 0;
+                timer = 0;
+                gameStarted = false;
                 
-                const validMoves = directions.filter(dir => {
-                    const newX = enemy.x + dir.dx;
-                    const newY = enemy.y + dir.dy;
-                    return (
-                        newX >= 0 && newX < boardSize.cols &&
-                        newY >= 0 && newY < boardSize.rows &&
-                        mazeLayout[newY][newX] === 0
-                    );
+                // Clear the board
+                gameBoard.innerHTML = '';
+                
+                // Update displays
+                movesDisplay.textContent = moves;
+                timerDisplay.textContent = timer;
+                matchesDisplay.textContent = matchedPairs;
+                
+                // Stop any running timer
+                clearInterval(timerInterval);
+                
+                // Create pairs of cards
+                const gameIcons = [...icons, ...icons];
+                
+                // Shuffle cards
+                shuffleArray(gameIcons);
+                
+                // Create card elements
+                gameIcons.forEach((icon, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.dataset.index = index;
+                    card.dataset.icon = icon;
+                    
+                    card.innerHTML = `
+                        <div class="front">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="back">
+                            <i class="fas fa-question"></i>
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', flipCard);
+                    gameBoard.appendChild(card);
+                    cards.push(card);
                 });
-                
-                if (validMoves.length > 0) {
-                    const move = validMoves[Math.floor(Math.random() * validMoves.length)];
-                    enemy.x += move.dx;
-                    enemy.y += move.dy;
-                }
-            });
-        }
-        
-        // Check collisions
-        function checkCollisions() {
-            // Check if player reached exit
-            if (playerPos.x === exitPos.x && playerPos.y === exitPos.y) {
-                endGame(true);
-                return;
             }
-            
-            // Check if enemy caught player
-            for (const enemy of enemies) {
-                if (playerPos.x === enemy.x && playerPos.y === enemy.y) {
-                    endGame(false);
+
+            // Shuffle array (Fisher-Yates algorithm)
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // Flip card
+            function flipCard() {
+                // Don't allow flipping if:
+                // - Game hasn't started (start timer on first flip)
+                // - Card is already flipped or matched
+                // - There are already 2 cards flipped
+                if (!gameStarted) {
+                    startTimer();
+                    gameStarted = true;
+                }
+                
+                if (this.classList.contains('flipped') || 
+                    this.classList.contains('matched') || 
+                    flippedCards.length === 2) {
                     return;
                 }
+                
+                // Flip the card
+                this.classList.add('flipped');
+                flippedCards.push(this);
+                
+                // Check for match if 2 cards are flipped
+                if (flippedCards.length === 2) {
+                    moveCounter();
+                    checkForMatch();
+                }
             }
-        }
-        
-        // Start game
-        function startGame() {
-            if (isGameRunning) return;
-            
-            // Reset positions
-            playerPos = { x: 1, y: 1 };
-            exitPos = { x: 18, y: 13 };
-            enemies = [
-                { x: 5, y: 5 },
-                { x: 15, y: 5 },
-                { x: 10, y: 10 }
-            ];
-            
-            initBoard();
-            updatePlayer();
-            updateEnemies();
-            updateExit();
-            
-            isGameRunning = true;
-            startBtn.disabled = true;
-            messageEl.textContent = "Gunakan tombol panah untuk bergerak!";
-            
-            gameInterval = setInterval(() => {
-                moveEnemies();
-                updateEnemies();
-                checkCollisions();
-            }, 500);
-        }
-        
-        // End game
-        function endGame(isWin) {
-            clearInterval(gameInterval);
-            isGameRunning = false;
-            startBtn.disabled = false;
-            
-            if (isWin) {
-                messageEl.textContent = "KAMU MENANG! 🎉";
-            } else {
-                messageEl.textContent = "Alien menangkapmu! 😱";
+
+            // Check if flipped cards match
+            function checkForMatch() {
+                const [card1, card2] = flippedCards;
+                
+                if (card1.dataset.icon === card2.dataset.icon) {
+                    // Match found
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedPairs++;
+                    matchesDisplay.textContent = matchedPairs;
+                    
+                    // Check if game is won
+                    if (matchedPairs === icons.length) {
+                        endGame();
+                    }
+                    
+                    flippedCards = [];
+                } else {
+                    // No match
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        flippedCards = [];
+                    }, 1000);
+                }
             }
-        }
-        
-        // Reset game
-        function resetGame() {
-            clearInterval(gameInterval);
-            isGameRunning = false;
-            startBtn.disabled = false;
-            messageEl.textContent = "Hindari alien dan temukan jalan keluar!";
-            initBoard();
-        }
-        
-        // Event listeners
-        startBtn.addEventListener('click', startGame);
-        resetBtn.addEventListener('click', resetGame);
-        
-        // Keyboard controls
-        document.addEventListener('keydown', (e) => {
-            if (!isGameRunning) return;
-            
-            let newX = playerPos.x;
-            let newY = playerPos.y;
-            
-            switch (e.key) {
-                case 'ArrowUp': newY--; break;
-                case 'ArrowDown': newY++; break;
-                case 'ArrowLeft': newX--; break;
-                case 'ArrowRight': newX++; break;
-                default: return;
+
+            // Move counter
+            function moveCounter() {
+                moves++;
+                movesDisplay.textContent = moves;
             }
-            
-            // Check if move is valid
-            if (
-                newX >= 0 && newX < boardSize.cols &&
-                newY >= 0 && newY < boardSize.rows &&
-                mazeLayout[newY][newX] === 0
-            ) {
-                playerPos.x = newX;
-                playerPos.y = newY;
-                updatePlayer();
-                checkCollisions();
+
+            // Timer
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    timer++;
+                    timerDisplay.textContent = timer;
+                }, 1000);
             }
+
+            // End game
+            function endGame() {
+                clearInterval(timerInterval);
+                finalMoves.textContent = moves;
+                finalTime.textContent = timer;
+                winModal.classList.add('show');
+            }
+
+            // Event listeners
+            restartBtn.addEventListener('click', initGame);
+            playAgainBtn.addEventListener('click', () => {
+                winModal.classList.remove('show');
+                initGame();
+            });
+
+            // Initialize the game on load
+            initGame();
         });
-        
-        // Initialize board on load
-        initBoard();
     </script>
 </body>
 </html>
